@@ -1,0 +1,61 @@
+﻿@page "/"
+@using Markdig
+@using Microsoft.SemanticKernel
+@using Microsoft.SemanticKernel.ChatCompletion
+@using MultiAgentsApp.Client.Agents
+@inject WriterAgentClient WriterAgentClient
+
+<PageTitle>Home</PageTitle>
+
+<h1>Multi-Agents App</h1>
+
+<div>
+    Title:
+    <input type="text" @bind="_title" placeholder="Enter a title" />
+</div>
+<div>
+    <button @onclick="CallAgentAsync">Call Agent</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(_progress))
+{
+    <div>
+        <h2>Progress:</h2>
+        <p>@((MarkupString)Markdown.ToHtml(_progress))</p>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_output))
+{
+    <div>
+        <h2>Output:</h2>
+        <p>@((MarkupString)Markdown.ToHtml(_output))</p>
+    </div>
+}
+
+
+@code {
+    private string _title = "";
+    private string _progress = "";
+    private string _output = "";
+
+    private async Task CallAgentAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_title)) return;
+
+        _progress = "執筆を依頼しました。";
+        _output = "";
+
+        var result = await WriterAgentClient.CallAsync(
+            new([new ChatMessageContent(AuthorRole.User, _title)]),
+            new Progress<string>(progress =>
+            {
+                _progress = progress;
+                _ = InvokeAsync(StateHasChanged);
+            }),
+            default);
+
+        _progress = "";
+        _output = result.Messages.FirstOrDefault()?.Content ?? "";
+    }
+}

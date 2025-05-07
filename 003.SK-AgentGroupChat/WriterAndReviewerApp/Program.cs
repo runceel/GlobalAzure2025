@@ -36,7 +36,7 @@ AgentGroupChat groupChat = new(writerAgent, reviewerAgent)
     },
 };
 
-const string userInput = "ASP.NET Core MVC の入門";
+const string userInput = ".NET 9 による C# 入門「基本文法編」";
 
 groupChat.AddChatMessage(new(AuthorRole.User, userInput));
 while (!groupChat.IsComplete)

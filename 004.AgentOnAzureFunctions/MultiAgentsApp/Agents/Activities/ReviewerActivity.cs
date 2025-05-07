@@ -1,13 +1,15 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 
 namespace MultiAgentsApp.Agents.Activities;
 public class ReviewerActivity(
-    [FromKeyedServices("ReviewerAgent")] Task<Agent> reviewerAgentTask,
+    Kernel kernel,
+    [FromKeyedServices("ReviewerAgent")] Agent reviewerAgent,
     ILogger<ReviewerActivity> logger) : 
-    AgentActivityBase(reviewerAgentTask, logger)
+    AgentActivityBase(kernel, reviewerAgent, logger)
 {
     [Function(nameof(ReviewerActivity))]
     public override Task<AgentResponse> RunAsync(

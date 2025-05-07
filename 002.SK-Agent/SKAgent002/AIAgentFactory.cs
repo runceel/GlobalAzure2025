@@ -12,7 +12,7 @@ internal static class AIAgentFactory
         IConfiguration configuration, Kernel kernel)
     {
         var projectClient = AzureAIAgent.CreateAzureAIClient(
-            configuration.GetConnectionString("AIFoundry"),
+            configuration.GetConnectionString("AIFoundry")!,
             new AzureCliCredential());
         var bingConnection = await projectClient.GetConnectionsClient()
             .GetConnectionAsync(configuration["BingConnectionName"]!);

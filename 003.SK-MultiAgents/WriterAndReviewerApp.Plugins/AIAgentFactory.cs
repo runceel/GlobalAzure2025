@@ -8,11 +8,11 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using System.ComponentModel;
 
-namespace MultiAgentsApp;
+namespace WriterAndReviewerApp.Plugins;
 internal static class AIAgentFactory
 {
-    public static async Task<Microsoft.SemanticKernel.Agents.Agent> CreateWriterAgent(
-        IConfiguration configuration)
+    public static async Task<AzureAIAgent> CreateWriterAgent(
+        IConfiguration configuration, Kernel kernel)
     {
         var projectClient = AzureAIAgent.CreateAzureAIClient(
             configuration.GetConnectionString("AIFoundry")!,
@@ -36,10 +36,13 @@ internal static class AIAgentFactory
                 ConnectionList = { new(bingConnection.Value.Id) },
             })]);
 
-        return new AzureAIAgent(agent.Value, agentsClient);
+        return new AzureAIAgent(agent.Value, agentsClient)
+        {
+            Kernel = kernel,
+        };
     }
 
-    public static Task<Microsoft.SemanticKernel.Agents.Agent> CreateReviewerAgent()
+    public static Task<ChatCompletionAgent> CreateReviewerAgent(Kernel kernel)
     {
         var agent = new ChatCompletionAgent
         {
@@ -52,7 +55,7 @@ internal static class AIAgentFactory
                 2. 画像は使用できないため、画像に関する指摘はしないこと
                 3. 記事の内容は正確であること
                 4. 過不足なく必要な情報が含まれていること
-                
+
                 指摘事項がある場合は finished プロパティを false にしてください。
                 指摘事項がない場合は finished プロパティを true にしてください。
                 
@@ -64,13 +67,62 @@ internal static class AIAgentFactory
                 - 指摘事項2
                 - 以下指摘事項の数だけ箇条書きで指摘してください。
                 """,
+            Kernel = kernel,
             Arguments = new(new AzureOpenAIPromptExecutionSettings
             {
                 ResponseFormat = typeof(ReviewResult),
             }),
         };
 
-        return Task.FromResult<Microsoft.SemanticKernel.Agents.Agent>(agent);
+        return Task.FromResult(agent);
+    }
+
+    public static Task<ChatCompletionAgent> CreateOrchestratorAgent(
+        Kernel kernel, 
+        Microsoft.SemanticKernel.Agents.Agent writerAgent, 
+        Microsoft.SemanticKernel.Agents.Agent reviewerAgent)
+    {
+        var cloneKernel = kernel.Clone();
+
+        // Agent をプラグイン化
+        var writerAgentPlugin = KernelPluginFactory.CreateFromFunctions(
+            "WriterAgent",
+            [AgentKernelFunctionFactory.CreateFromAgent(writerAgent)]);
+        var reviewerAgentPlugin = KernelPluginFactory.CreateFromFunctions(
+            "ReviewerAgent",
+            [AgentKernelFunctionFactory.CreateFromAgent(reviewerAgent)]);
+
+        // プラグインをカーネルに追加
+        cloneKernel.Plugins.Add(writerAgentPlugin);
+        cloneKernel.Plugins.Add(reviewerAgentPlugin);
+
+        // プラグインを使用して記事を作成するエージェントを作成
+        var agent = new ChatCompletionAgent
+        {
+            Name = "OrchestratorAgent",
+            Description = "オーケストレーターエージェント",
+            Instructions = """
+                あなたは ReviewerAgent と WriterAgent をオーケストレーションするエージェントです。
+                ReviewerAgent と WriterAgent を使ってユーザーによって指示されたタイトルの記事を作成してください。
+                WriterAgent が書いた記事は必ず ReviwerAgent にレビューを依頼してください。
+                レビュー指摘が無くなるまで ReviewrAgent と WriterAgent を繰り返してください。
+
+                WriterAgent は過去のやりとりを記憶していないため WriterAgent に指示をする際には
+                修正元の文章の全文とレビューワーの指摘事項の両方を渡してください。
+
+                ReviwerAgent は過去のやりとりを記憶しているため、レビューワーに指示をする際には
+                レビュー対象の文章の全文を渡してください。
+
+                レビュー指摘が無くなったら WriterAgent の最終稿を出力してください。
+                """,
+            Kernel = cloneKernel,
+            Arguments = new(new AzureOpenAIPromptExecutionSettings
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            }),
+        };
+
+        return Task.FromResult(agent);
     }
 }
 
@@ -78,8 +130,4 @@ public record ReviewResult(
     [Description("レビューの結果")]
     string Text,
     [Description("レビューが完了したかどうか")]
-    bool Finished)
-{
-    public static ReviewResult EmptyFinished { get; } = new("", true);
-    public static ReviewResult EmptyNotFinished { get; } = new("", false);
-}
+    bool Finished);

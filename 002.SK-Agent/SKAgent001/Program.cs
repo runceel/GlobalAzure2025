@@ -25,12 +25,16 @@ var kernel = builder.Build();
 
 Agent agent = new ChatCompletionAgent
 {
+    // Agent 名
     Name = "CatAgent",
+    // Agent への指示 (System Prompt)
     Instructions = """
         あなたは猫型アシスタンスです。猫らしく振舞うために語尾は「にゃん」にしてください。
         わからないことに関しては素直にわからないという旨を猫っぽく伝えてください。
         """,
+    // Agent が使用するプラグインなどを含んだ Kernel
     Kernel = kernel,
+    // Agent の細かい設定
     Arguments = new(new PromptExecutionSettings()
     {
         FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),

@@ -10,6 +10,8 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using MultiAgentsApp;
 
 var builder = FunctionsApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 builder.Configuration.AddUserSecrets<Program>();
 
 builder.ConfigureFunctionsWebApplication();
@@ -30,17 +32,15 @@ builder.Services.AddSingleton<IChatCompletionService>(sp =>
 
 builder.Services.AddKernel();
 
-builder.Services.AddKeyedTransient("WriterAgent", (sp, _) =>
+builder.Services.AddKeyedSingleton("WriterAgent", (sp, _) =>
 {
     return AIAgentFactory.CreateWriterAgent(
-        sp.GetRequiredService<IConfiguration>(),
-        sp.GetRequiredService<Kernel>());
+        sp.GetRequiredService<IConfiguration>()).Result;
 });
 
-builder.Services.AddKeyedTransient("ReviewerAgent", (sp, _) =>
+builder.Services.AddKeyedSingleton("ReviewerAgent", (sp, _) =>
 {
-    return AIAgentFactory.CreateReviewerAgent(
-        sp.GetRequiredService<Kernel>());
+    return AIAgentFactory.CreateReviewerAgent().Result;
 });
 
 builder.Build().Run();

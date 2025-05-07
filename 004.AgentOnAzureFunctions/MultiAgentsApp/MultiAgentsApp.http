@@ -1,0 +1,5 @@
+﻿@MultiAgentsApp_HostAddress = http://localhost:7102
+
+POST {{MultiAgentsApp_HostAddress}}/api/AgentFunction
+
+###
