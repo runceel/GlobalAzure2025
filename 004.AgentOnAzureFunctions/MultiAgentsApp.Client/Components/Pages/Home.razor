@@ -21,7 +21,7 @@
 {
     <div>
         <h2>Progress:</h2>
-        <p>@((MarkupString)Markdown.ToHtml(_progress))</p>
+        <p>@((MarkupString)Markdown.ToHtml(_progress, _pipeline))</p>
     </div>
 }
 
@@ -29,7 +29,7 @@
 {
     <div>
         <h2>Output:</h2>
-        <p>@((MarkupString)Markdown.ToHtml(_output))</p>
+        <p>@((MarkupString)Markdown.ToHtml(_output, _pipeline))</p>
     </div>
 }
 
@@ -38,6 +38,10 @@
     private string _title = "";
     private string _progress = "";
     private string _output = "";
+
+    private readonly MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .Build();
 
     private async Task CallAgentAsync()
     {

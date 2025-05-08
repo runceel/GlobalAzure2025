@@ -34,23 +34,7 @@ const string userInput = "ASP.NET Core MVC 入門";
 AgentThread? thread = null;
 while (true)
 {
-    // Plan
     await foreach (var response in orchestratorAgent.InvokeAsync(userInput, thread))
-    {
-        thread = response.Thread;
-        Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
-        Console.ReadLine();
-    }
-
-    //execute
-    await foreach (var response in orchestratorAgent.InvokeAsync(userInput, thread,
-        options: new()
-        {
-            KernelArguments = new(new PromptExecutionSettings
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
-            }),
-        }))
     {
         thread = response.Thread;
         Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");

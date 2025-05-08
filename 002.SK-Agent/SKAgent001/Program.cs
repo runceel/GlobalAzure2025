@@ -18,8 +18,8 @@ builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
 
-builder.Plugins.AddFromType<WeatherPlugin>();
-builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
+//builder.Plugins.AddFromType<WeatherPlugin>();
+//builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
 
 var kernel = builder.Build();
 
@@ -35,10 +35,10 @@ Agent agent = new ChatCompletionAgent
     // Agent が使用するプラグインなどを含んだ Kernel
     Kernel = kernel,
     // Agent の細かい設定
-    Arguments = new(new PromptExecutionSettings()
-    {
-        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-    }),
+    //Arguments = new(new PromptExecutionSettings()
+    //{
+    //    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+    //}),
 };
 
 const string userInput = "こんにちは！！東京の天気を教えて！";
@@ -50,42 +50,42 @@ await foreach (var response in agent.InvokeAsync(userInput, thread))
 }
 
 
-class WeatherPlugin
-{
-    private static readonly string[] WeatherConditions = { "晴れ", "曇り", "雨", "雪", "雷雨" };
-    private static readonly Random Random = Random.Shared;
+//class WeatherPlugin
+//{
+//    private static readonly string[] WeatherConditions = { "晴れ", "曇り", "雨", "雪", "雷雨" };
+//    private static readonly Random Random = Random.Shared;
 
-    [KernelFunction]
-    [Description("天気予報を取得します。")]
-    public string GetWeatherForecast(
-        [Description("場所")]
-       string location)
-    {
-        var randomWeather = WeatherConditions[Random.Next(WeatherConditions.Length)];
-        return $"{location} の天気は「{randomWeather}」です。";
-    }
-}
+//    [KernelFunction]
+//    [Description("天気予報を取得します。")]
+//    public string GetWeatherForecast(
+//        [Description("場所")]
+//       string location)
+//    {
+//        var randomWeather = WeatherConditions[Random.Next(WeatherConditions.Length)];
+//        return $"{location} の天気は「{randomWeather}」です。";
+//    }
+//}
 
 // Human in the loop 用のフィルター
-class HumanInTheLoopFilter : IAutoFunctionInvocationFilter
-{
-    public async Task OnAutoFunctionInvocationAsync(
-        AutoFunctionInvocationContext context,
-        Func<AutoFunctionInvocationContext, Task> next)
-    {
-        var args = string.Join(
-            ", ",
-            context.Arguments?.Select(x => $"{x.Key}: {x.Value}") ?? []);
-        Console.WriteLine($"{context.Function.Name}({args}) を呼んでもいいですか？(y/n)");
-        var answer = Console.ReadLine() ?? "n";
-        if (answer.ToLower(CultureInfo.InvariantCulture) == "y")
-        {
-            await next(context);
-        }
-        else
-        {
-            context.Result = new(context.Result, "ユーザーがキャンセルしました。");
-            context.Terminate = true;
-        }
-    }
-}
+//class HumanInTheLoopFilter : IAutoFunctionInvocationFilter
+//{
+//    public async Task OnAutoFunctionInvocationAsync(
+//        AutoFunctionInvocationContext context,
+//        Func<AutoFunctionInvocationContext, Task> next)
+//    {
+//        var args = string.Join(
+//            ", ",
+//            context.Arguments?.Select(x => $"{x.Key}: {x.Value}") ?? []);
+//        Console.WriteLine($"{context.Function.Name}({args}) を呼んでもいいですか？(y/n)");
+//        var answer = Console.ReadLine() ?? "n";
+//        if (answer.ToLower(CultureInfo.InvariantCulture) == "y")
+//        {
+//            await next(context);
+//        }
+//        else
+//        {
+//            context.Result = new(context.Result, "ユーザーがキャンセルしました。");
+//            context.Terminate = true;
+//        }
+//    }
+//}

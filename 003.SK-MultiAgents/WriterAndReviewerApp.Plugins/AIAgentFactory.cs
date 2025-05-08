@@ -118,6 +118,10 @@ internal static class AIAgentFactory
                 レビュー指摘が無くなったら WriterAgent の最終稿を出力してください。
                 """,
             Kernel = cloneKernel,
+            Arguments = new(new AzureOpenAIPromptExecutionSettings
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            }),
         };
 
         return Task.FromResult(agent);

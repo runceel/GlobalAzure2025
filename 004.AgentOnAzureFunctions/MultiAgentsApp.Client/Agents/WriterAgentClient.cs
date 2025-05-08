@@ -33,12 +33,6 @@ public class WriterAgentClient(HttpClient httpClient, ILogger<WriterAgentClient>
         {
             await Task.Delay(500);
 
-            //var orchstrationResponse = await httpClient.GetStringAsync(
-            //    responseBody.StatusQueryGetUri,
-            //    cancellationToken);
-            //var orchestrationMetadata = JsonSerializer.Deserialize<OrchestrationMetadata>(
-            //    orchstrationResponse,
-            //    s_jsonSerializerOptions);
             var orchestrationMetadata = await httpClient.GetFromJsonAsync<OrchestrationMetadata>(
                 responseBody.StatusQueryGetUri,
                 s_jsonSerializerOptions,

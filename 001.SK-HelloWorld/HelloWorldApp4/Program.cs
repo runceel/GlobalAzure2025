@@ -21,7 +21,7 @@ builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
 
-// フィルターで
+// Human in the loop 用のフィルターを登録
 builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
 
 builder.Plugins.AddFromType<WeatherPlugin>();
@@ -35,6 +35,7 @@ var result = await kernel.InvokePromptAsync("""
     <message role="user">
         こんにちは、私の名前は {{$name}} です。
         {{$location}} の天気を教えてください。
+    </message>
     """,
     arguments: new(new PromptExecutionSettings
         {
