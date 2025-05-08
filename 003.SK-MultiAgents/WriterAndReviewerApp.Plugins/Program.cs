@@ -2,7 +2,6 @@
 #pragma warning disable SKEXP0110
 
 using System.Diagnostics;
-using Azure;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,19 +32,30 @@ var orchestratorAgent = await AIAgentFactory.CreateOrchestratorAgent(
 
 const string userInput = "ASP.NET Core MVC 入門";
 AgentThread? thread = null;
-await foreach (var response in orchestratorAgent.InvokeAsync(userInput, thread))
+while (true)
 {
-    thread = response.Thread;
-    Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
-    Console.WriteLine();
-
-    await File.WriteAllTextAsync("output.md", response.Message.Content);
-    Process.Start(new ProcessStartInfo
+    // Plan
+    await foreach (var response in orchestratorAgent.InvokeAsync(userInput, thread))
     {
-        FileName = "code",
-        Arguments = "-r output.md",
-        UseShellExecute = true,
-    });
+        thread = response.Thread;
+        Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
+        Console.ReadLine();
+    }
+
+    //execute
+    await foreach (var response in orchestratorAgent.InvokeAsync(userInput, thread,
+        options: new()
+        {
+            KernelArguments = new(new PromptExecutionSettings
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
+            }),
+        }))
+    {
+        thread = response.Thread;
+        Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
+        Console.ReadLine();
+    }
 }
 
 class FunctionInvocationLoggerFilter : IAutoFunctionInvocationFilter
@@ -66,6 +76,7 @@ class FunctionInvocationLoggerFilter : IAutoFunctionInvocationFilter
             FileName = "code",
             Arguments = $"-r {context.Function.PluginName}.md",
             UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
         });
 
     }

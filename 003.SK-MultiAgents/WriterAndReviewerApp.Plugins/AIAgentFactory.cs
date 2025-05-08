@@ -21,7 +21,7 @@ internal static class AIAgentFactory
             .GetConnectionAsync(configuration["BingConnectionName"]!);
         var agentsClient = projectClient.GetAgentsClient();
         var agent = await agentsClient.CreateAgentAsync(
-            "gpt-4o",
+            "gpt-4.1",
             name: "WriterAgent",
             description: "ライターエージェント",
             instructions: """
@@ -106,6 +106,8 @@ internal static class AIAgentFactory
                 ReviewerAgent と WriterAgent を使ってユーザーによって指示されたタイトルの記事を作成してください。
                 WriterAgent が書いた記事は必ず ReviwerAgent にレビューを依頼してください。
                 レビュー指摘が無くなるまで ReviewrAgent と WriterAgent を繰り返してください。
+                ReviewrAgent と WriterAgent を呼び出す前には必ずユーザーに対して何故そのエージェントを呼び出すのかを説明してください。
+                例えば「WriterAgent に初稿を書いてもらいます。」や「ReviewerAgent に初稿をレビューしてもらいます。」などです。
 
                 WriterAgent は過去のやりとりを記憶していないため WriterAgent に指示をする際には
                 修正元の文章の全文とレビューワーの指摘事項の両方を渡してください。
@@ -116,10 +118,6 @@ internal static class AIAgentFactory
                 レビュー指摘が無くなったら WriterAgent の最終稿を出力してください。
                 """,
             Kernel = cloneKernel,
-            Arguments = new(new AzureOpenAIPromptExecutionSettings
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            }),
         };
 
         return Task.FromResult(agent);

@@ -52,23 +52,31 @@ await foreach (var response in agent.InvokeAsync(userInput, thread))
 
 class WeatherPlugin
 {
+    private static readonly string[] WeatherConditions = { "晴れ", "曇り", "雨", "雪", "雷雨" };
+    private static readonly Random Random = Random.Shared;
+
     [KernelFunction]
     [Description("天気予報を取得します。")]
     public string GetWeatherForecast(
         [Description("場所")]
-        string location)
+       string location)
     {
-        return $"{location} の天気は「晴れ」です。";
+        var randomWeather = WeatherConditions[Random.Next(WeatherConditions.Length)];
+        return $"{location} の天気は「{randomWeather}」です。";
     }
 }
 
+// Human in the loop 用のフィルター
 class HumanInTheLoopFilter : IAutoFunctionInvocationFilter
 {
     public async Task OnAutoFunctionInvocationAsync(
         AutoFunctionInvocationContext context,
         Func<AutoFunctionInvocationContext, Task> next)
     {
-        Console.WriteLine($"{context.Function.Name} を呼んでもいいですか？(y/n)");
+        var args = string.Join(
+            ", ",
+            context.Arguments?.Select(x => $"{x.Key}: {x.Value}") ?? []);
+        Console.WriteLine($"{context.Function.Name}({args}) を呼んでもいいですか？(y/n)");
         var answer = Console.ReadLine() ?? "n";
         if (answer.ToLower(CultureInfo.InvariantCulture) == "y")
         {
@@ -76,8 +84,7 @@ class HumanInTheLoopFilter : IAutoFunctionInvocationFilter
         }
         else
         {
-            context.Result = new FunctionResult(
-                context.Result, "ユーザーがキャンセルしました。");
+            context.Result = new(context.Result, "ユーザーがキャンセルしました。");
             context.Terminate = true;
         }
     }

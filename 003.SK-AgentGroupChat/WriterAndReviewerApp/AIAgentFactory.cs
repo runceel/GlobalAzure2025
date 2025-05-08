@@ -21,7 +21,7 @@ internal static class AIAgentFactory
             .GetConnectionAsync(configuration["BingConnectionName"]!);
         var agentsClient = projectClient.GetAgentsClient();
         var agent = await agentsClient.CreateAgentAsync(
-            "gpt-4o",
+            "gpt-4.1",
             name: "WriterAgent",
             description: "ライターエージェント",
             instructions: """
