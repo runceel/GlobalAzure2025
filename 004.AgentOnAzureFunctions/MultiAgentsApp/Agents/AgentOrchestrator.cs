@@ -24,7 +24,7 @@ public class AgentOrchestrator
         context.SetCustomStatus("ライターが執筆中です。");
         int loopCount = 1;
         // レビューが終わるまでループ
-        while (reviewResult.Finished is false)
+        while (reviewResult.Finished is false || loopCount <= 10)
         {
             // ライターに執筆を依頼
             var writerAgentResponse = await context.CallActivityAsync<AgentResponse>(

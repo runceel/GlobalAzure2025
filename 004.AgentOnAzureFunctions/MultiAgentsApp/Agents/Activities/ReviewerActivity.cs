@@ -5,6 +5,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 
 namespace MultiAgentsApp.Agents.Activities;
+
+// Reviewer agent 用の Activity
 public class ReviewerActivity(
     Kernel kernel,
     [FromKeyedServices("ReviewerAgent")] Agent reviewerAgent,

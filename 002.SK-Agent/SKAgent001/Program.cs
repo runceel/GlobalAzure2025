@@ -1,25 +1,27 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using System.ComponentModel;
-using System.Globalization;
 
+// 構成情報を読み込む
 var configuration = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
     .Build();
-
+// AOAI のエンドポイントを構成情報から取得
 var aoaiEndpoint = configuration.GetConnectionString("AOAI")
     ?? throw new InvalidOperationException();
 
+// Semantic Kernel のセットアップ
 var builder = Kernel.CreateBuilder();
+// Chat Completions API 用のサービスを追加
 builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
 
-//builder.Plugins.AddFromType<WeatherPlugin>();
+// Human in the loop 用のフィルターを登録
 //builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
+// WeatherPlugin クラスをプラグインとして登録
+//builder.Plugins.AddFromType<WeatherPlugin>();
 
 var kernel = builder.Build();
 
@@ -42,14 +44,10 @@ Agent agent = new ChatCompletionAgent
 };
 
 const string userInput = "こんにちは！！東京の天気を教えて！";
-AgentThread? thread = null;
-await foreach (var response in agent.InvokeAsync(userInput, thread))
-{
-    thread = response.Thread;
-    Console.WriteLine(response.Message.Content);
-}
+var result = await agent.InvokeAsync(userInput).FirstAsync();
+Console.WriteLine(result.Message.Content);
 
-
+// WeatherPlugin クラスを定義
 //class WeatherPlugin
 //{
 //    private static readonly string[] WeatherConditions = { "晴れ", "曇り", "雨", "雪", "雷雨" };

@@ -8,37 +8,40 @@ using SKAgent002;
 using System.ComponentModel;
 using System.Globalization;
 
+// 構成情報を読み込む
 var configuration = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
     .Build();
+// AOAI のエンドポイントを構成情報から取得
 var aoaiEndpoint = configuration.GetConnectionString("AOAI")
     ?? throw new InvalidOperationException();
 
+// Semantic Kernel のセットアップ
 var builder = Kernel.CreateBuilder();
+// Chat Completions API 用のサービスを追加
 builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
 
-builder.Plugins.AddFromType<WeatherPlugin>();
+// Human in the loop 用のフィルターを登録
 builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
 
+// WeatherPlugin クラスをプラグインとして登録
+builder.Plugins.AddFromType<WeatherPlugin>();
+
+// Semantic Kernel のセットアップ
 var kernel = builder.Build();
 
+// Azure AI Agent Service で Agent を作成
 Agent agent = await AIAgentFactory.CreateAgent(configuration, kernel);
 
-const string userInput = "GetWeatherForecast に東京を渡して返ってきた文字列の東京の文字列文字化けしてる？ちょっとツール呼んで試してみて。";
-AgentThread? thread = null;
-await foreach (var response in agent.InvokeAsync(userInput, thread))
-{
-    thread = response.Thread;
-    Console.WriteLine(response.Message.Content);
-}
+// Agent を使用して天気を質問する
+const string userInput = "こんにちは！！東京の天気を教えて！";
+var result = await agent.InvokeAsync(userInput).FirstAsync();
+Console.WriteLine(result.Message.Content);
 
-if (thread != null)
-{
-    await thread.DeleteAsync();
-}
 
+// WeatherPlugin クラスを定義
 class WeatherPlugin
 {
     private static readonly string[] WeatherConditions = { "晴れ", "曇り", "雨", "雪", "雷雨" };

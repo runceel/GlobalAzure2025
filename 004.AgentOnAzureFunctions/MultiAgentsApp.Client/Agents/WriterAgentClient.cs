@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Microsoft.SemanticKernel;
 
 namespace MultiAgentsApp.Client.Agents;
 

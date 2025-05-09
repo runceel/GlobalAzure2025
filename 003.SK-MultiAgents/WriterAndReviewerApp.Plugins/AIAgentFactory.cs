@@ -11,6 +11,7 @@ using System.ComponentModel;
 namespace WriterAndReviewerApp.Plugins;
 internal static class AIAgentFactory
 {
+    // Writer agent を作成する
     public static async Task<AzureAIAgent> CreateWriterAgent(
         IConfiguration configuration, Kernel kernel)
     {
@@ -42,6 +43,7 @@ internal static class AIAgentFactory
         };
     }
 
+    // Reviewer agent を作成する
     public static Task<ChatCompletionAgent> CreateReviewerAgent(Kernel kernel)
     {
         var agent = new ChatCompletionAgent
@@ -77,11 +79,13 @@ internal static class AIAgentFactory
         return Task.FromResult(agent);
     }
 
+    // Orchestrator agent を作成する
     public static Task<ChatCompletionAgent> CreateOrchestratorAgent(
         Kernel kernel, 
         Microsoft.SemanticKernel.Agents.Agent writerAgent, 
         Microsoft.SemanticKernel.Agents.Agent reviewerAgent)
     {
+        // カーネルをクローン (Reviewer と Writer の Agent を使用するため)
         var cloneKernel = kernel.Clone();
 
         // Agent をプラグイン化
@@ -120,6 +124,7 @@ internal static class AIAgentFactory
             Kernel = cloneKernel,
             Arguments = new(new AzureOpenAIPromptExecutionSettings
             {
+                // 自動で関数を選択する
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             }),
         };

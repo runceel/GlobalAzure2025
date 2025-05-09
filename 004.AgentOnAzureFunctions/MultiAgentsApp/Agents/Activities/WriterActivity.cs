@@ -5,6 +5,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 
 namespace MultiAgentsApp.Agents.Activities;
+
+// Writer agent 用の Activity
 public class WriterActivity(
     Kernel kernel,
     [FromKeyedServices("WriterAgent")] Agent writerAgent,

@@ -3,7 +3,6 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -17,6 +16,7 @@ var aoaiEndpoint = configuration.GetConnectionString("AOAI")
 
 // Semantic Kernel のセットアップ
 var builder = Kernel.CreateBuilder();
+// Chat Completions API 用のサービスを追加
 builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
@@ -24,31 +24,32 @@ builder.AddAzureOpenAIChatCompletion("gpt-4.1",
 // Human in the loop 用のフィルターを登録
 builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
 
+// WeatherPlugin クラスをプラグインとして登録
 builder.Plugins.AddFromType<WeatherPlugin>();
 
+// Semantic Kernel のセットアップ
 var kernel = builder.Build();
 
+// 東京の天気を質問する
 var result = await kernel.InvokePromptAsync("""
     <message role="system">
         あなたは猫型アシスタントです。猫らしく振舞うために語尾は「にゃん」にしてください。
     </message>
     <message role="user">
-        こんにちは、私の名前は {{$name}} です。
-        {{$location}} の天気を教えてください。
+        こんにちは、私の名前はかずきです。
+        東京の天気を教えてください。
     </message>
     """,
     arguments: new(new PromptExecutionSettings
-        {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-        })
     {
-        ["name"] = "セマンティックカーネル",
-        ["location"] = "東京",
-    });
+        // プラグインの関数を自動で呼び出すように設定
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+    }));
 
+// 結果を取得
 Console.WriteLine(result.GetValue<string>());
 
-
+// WeatherPlugin クラスを定義
 class WeatherPlugin
 {
     [KernelFunction]

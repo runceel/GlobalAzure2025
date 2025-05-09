@@ -13,10 +13,12 @@ var aoaiEndpoint = configuration.GetConnectionString("AOAI")
 
 // Semantic Kernel のセットアップ
 var builder = Kernel.CreateBuilder();
+// Chat Completions API 用のサービスを追加
 builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
 
+// Semantic Kernel のコアクラスの Kernel クラスを作成
 var kernel = builder.Build();
 
 // プロンプトを実行
@@ -26,7 +28,7 @@ var result = await kernel.InvokePromptAsync(
     // プロンプトの引数を指定
     new KernelArguments
     {
-        ["name"] = "セマンティックカーネル",
+        ["name"] = "セマンティック カーネル",
     });
 
 // 結果を表示

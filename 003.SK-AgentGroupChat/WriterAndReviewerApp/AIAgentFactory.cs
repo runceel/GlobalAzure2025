@@ -11,15 +11,18 @@ using System.ComponentModel;
 namespace WriterAndReviewerApp;
 internal static class AIAgentFactory
 {
+    // Writer agent を作成する
     public static async Task<AzureAIAgent> CreateWriterAgent(
         IConfiguration configuration, Kernel kernel)
     {
+        // Azure AI Agent Service 上で Agent を作成する
         var projectClient = AzureAIAgent.CreateAzureAIClient(
             configuration.GetConnectionString("AIFoundry")!,
             new AzureCliCredential());
         var bingConnection = await projectClient.GetConnectionsClient()
             .GetConnectionAsync(configuration["BingConnectionName"]!);
         var agentsClient = projectClient.GetAgentsClient();
+        // 記事を書くための Agent を作成
         var agent = await agentsClient.CreateAgentAsync(
             "gpt-4.1",
             name: "WriterAgent",
@@ -42,8 +45,10 @@ internal static class AIAgentFactory
         };
     }
 
+    // Reviewer agent を作成する
     public static Task<ChatCompletionAgent> CreateReviewerAgent(Kernel kernel)
     {
+        // Chat Completions API を使用して Reviewer agent を作成する
         var agent = new ChatCompletionAgent
         {
             Name = "ReviewerAgent",
@@ -70,6 +75,7 @@ internal static class AIAgentFactory
             Kernel = kernel,
             Arguments = new(new AzureOpenAIPromptExecutionSettings
             {
+                // 戻り値を ReviewResult 型の JSON にする (Structured output)
                 ResponseFormat = typeof(ReviewResult),
             }),
         };
@@ -78,6 +84,7 @@ internal static class AIAgentFactory
     }
 }
 
+// Reviewer agent の戻り値の型
 public record ReviewResult(
     [Description("レビューの結果")]
     string Text,

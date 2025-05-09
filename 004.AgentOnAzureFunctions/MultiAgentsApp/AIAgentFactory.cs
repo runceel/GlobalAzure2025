@@ -3,7 +3,6 @@ using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Agents.AzureAI;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using System.ComponentModel;

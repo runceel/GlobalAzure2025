@@ -6,7 +6,6 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using WriterAndReviewerApp.Plugins;
 
 var configuration = new ConfigurationBuilder()
@@ -31,16 +30,8 @@ var orchestratorAgent = await AIAgentFactory.CreateOrchestratorAgent(
     reviewerAgent);
 
 const string userInput = "ASP.NET Core MVC 入門";
-AgentThread? thread = null;
-while (true)
-{
-    await foreach (var response in orchestratorAgent.InvokeAsync(userInput, thread))
-    {
-        thread = response.Thread;
-        Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
-        Console.ReadLine();
-    }
-}
+var response = await orchestratorAgent.InvokeAsync(userInput).FirstAsync();
+Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
 
 class FunctionInvocationLoggerFilter : IAutoFunctionInvocationFilter
 {
@@ -53,7 +44,7 @@ class FunctionInvocationLoggerFilter : IAutoFunctionInvocationFilter
 
         var messages = context.Result.GetValue<ChatMessageContent[]>();
         await File.WriteAllTextAsync(
-            $"{context.Function.PluginName}.md", 
+            $"{context.Function.PluginName}.md",
             messages?.FirstOrDefault()?.Content ?? "");
         Process.Start(new ProcessStartInfo
         {

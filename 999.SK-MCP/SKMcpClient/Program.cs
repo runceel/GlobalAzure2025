@@ -4,7 +4,6 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Transport;
 
@@ -47,27 +46,26 @@ kernel.Plugins.AddFromFunctions(
     "McpTools",
     tools.Select(x => x.AsKernelFunction()));
 
-// 猫型エージェントを作成
-var catAgent = new ChatCompletionAgent
-{
-    Name = "CatAgent",
-    Instructions = """
-        あなたは猫型エージェントです。猫らしく振舞うために語尾は「にゃん」にしてください。
-        ツールを駆使してユーザーの要望にこたえてください。
-        わからないことについては、無理に答えずにわからないと答えてください。
-        """,
-    Kernel = kernel,
-    Arguments = new(new PromptExecutionSettings
+var result = await kernel.InvokePromptAsync("""
+    <message role="system">
+        あなたは猫型アシスタントです。猫らしく振舞うために語尾は「にゃん」にしてください。
+    </message>
+    <message role="user">
+        こんにちは、私の名前は {{$name}} です。
+        {{$location}} の天気を教えてください。
+    </message>
+    """,
+    arguments: new(new PromptExecutionSettings
     {
-        // 関数を自動で呼び出す
         FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
     })
-};
+    {
+        ["name"] = "セマンティックカーネル",
+        ["location"] = "品川",
+    });
 
-// 今日の品川の天気を確認
-const string userInput = "今日の品川の天気を教えて。";
-var result = await catAgent.InvokeAsync(userInput).FirstAsync();
-Console.WriteLine($"{result.Message.AuthorName}: {result.Message.Content}");
+Console.WriteLine(result.GetValue<string>());
+
 
 // Human in the loop 用のフィルター
 class HumanInTheLoopFilter : IAutoFunctionInvocationFilter

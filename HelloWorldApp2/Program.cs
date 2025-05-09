@@ -57,7 +57,6 @@ Console.WriteLine(result.GetValue<string>());
 class WeatherPlugin
 {
     // 指定した場所の天気予報を取得する関数を定義
-    // Plugin は関数の集合体
     [KernelFunction]
     [Description("天気予報を取得します。")]
     public string GetWeatherForecast(
