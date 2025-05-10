@@ -37,7 +37,7 @@ var result = await kernel.InvokePromptAsync("""
     </message>
     <message role="user">
         こんにちは、私の名前はかずきです。
-        東京の天気を教えてください。
+        今日の東京の天気を教えてください。
     </message>
     """,
     arguments: new(new PromptExecutionSettings
@@ -55,10 +55,12 @@ class WeatherPlugin
     [KernelFunction]
     [Description("天気予報を取得します。")]
     public string GetWeatherForecast(
+        [Description("天気を知りたい日付")]
+        DateTimeOffset date,
         [Description("場所")]
         string location)
     {
-        return $"{location} の天気は「晴れ」です。";
+        return $"{date} の {location} の天気は「晴れ」です。";
     }
 }
 
