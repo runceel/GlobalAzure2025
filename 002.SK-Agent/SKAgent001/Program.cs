@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using System.ComponentModel;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -43,25 +44,43 @@ Agent agent = new ChatCompletionAgent
     //}),
 };
 
-const string userInput = "こんにちは！！東京の天気を教えて！";
-var result = await agent.InvokeAsync(userInput).FirstAsync();
-Console.WriteLine(result.Message.Content);
+// Agent と会話をする
+AgentThread? thread = null;
+while (true)
+{
+    Console.Write("User: ");
+    string userInput = Console.ReadLine()!;
+    if (string.IsNullOrWhiteSpace(userInput))
+    {
+        break;
+    }
+
+    var result = await agent.InvokeAsync(userInput, thread).FirstAsync();
+    thread = result.Thread;
+    Console.WriteLine($"CatAgent: {result.Message.Content}");
+    Console.WriteLine();
+}
+
+if (thread != null) await thread.DeleteAsync();
 
 // WeatherPlugin クラスを定義
 //class WeatherPlugin
 //{
-//    private static readonly string[] WeatherConditions = { "晴れ", "曇り", "雨", "雪", "雷雨" };
-//    private static readonly Random Random = Random.Shared;
-
 //    [KernelFunction]
 //    [Description("天気予報を取得します。")]
 //    public string GetWeatherForecast(
+//        [Description("天気を知りたい日付")]
+//        DateTimeOffset date,
 //        [Description("場所")]
-//       string location)
+//        string location)
 //    {
-//        var randomWeather = WeatherConditions[Random.Next(WeatherConditions.Length)];
-//        return $"{location} の天気は「{randomWeather}」です。";
+//        return $"{date} の {location} の天気は「晴れ」です。";
 //    }
+
+//    [KernelFunction]
+//    [Description("今日の日付を取得します。")]
+//    public DateTimeOffset GetToday() =>
+//        TimeProvider.System.GetLocalNow();
 //}
 
 // Human in the loop 用のフィルター

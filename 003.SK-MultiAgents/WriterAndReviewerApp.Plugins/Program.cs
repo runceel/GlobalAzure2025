@@ -51,20 +51,11 @@ class FunctionInvocationLoggerFilter : IAutoFunctionInvocationFilter
     {
         Console.WriteLine("=========================================");
         var args = string.Join(", ", context.Arguments?.Select(x => $"{x.Key}: {x.Value}") ?? []);
-        Console.WriteLine($"Invoking: {context.Function.PluginName}({args})");
+        Console.WriteLine($"☆☆Invoking: {context.Function.PluginName}({args})");
         await next(context);
 
         var messages = context.Result.GetValue<ChatMessageContent[]>();
-        await File.WriteAllTextAsync(
-            $"{context.Function.PluginName}.md",
-            messages?.FirstOrDefault()?.Content ?? "");
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "code",
-            Arguments = $"-r {context.Function.PluginName}.md",
-            UseShellExecute = true,
-            WindowStyle = ProcessWindowStyle.Hidden,
-        });
-
+        Console.WriteLine($"☆☆Result: {messages?[0]?.Content?[0..10]}");
+        Console.WriteLine();
     }
 }

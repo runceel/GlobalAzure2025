@@ -117,8 +117,8 @@ internal static class AIAgentFactory
                 WriterAgent は過去のやりとりを記憶していないため WriterAgent に指示をする際には
                 修正元の文章の全文とレビューワーの指摘事項の両方を渡してください。
 
-                ReviwerAgent は過去のやりとりを記憶しているため、レビューワーに指示をする際には
-                レビュー対象の文章の全文を渡してください。
+                ReviwerAgent は過去のやりとりを記憶していないため、ReviwerAgent に指示をする際には
+                レビューを実施するために必要な情報を全て渡してください。
 
                 レビュー指摘が無くなったら WriterAgent の最終稿を出力してください。
                 """,
