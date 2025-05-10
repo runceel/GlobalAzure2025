@@ -22,7 +22,7 @@ builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     new AzureCliCredential());
 
 // Human in the loop 用のフィルターを登録
-builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
+//builder.Services.AddSingleton<IAutoFunctionInvocationFilter, HumanInTheLoopFilter>();
 
 // WeatherPlugin クラスをプラグインとして登録
 builder.Plugins.AddFromType<WeatherPlugin>();
@@ -63,25 +63,25 @@ class WeatherPlugin
 }
 
 // Human in the loop 用のフィルター
-class HumanInTheLoopFilter : IAutoFunctionInvocationFilter
-{
-    public async Task OnAutoFunctionInvocationAsync(
-        AutoFunctionInvocationContext context,
-        Func<AutoFunctionInvocationContext, Task> next)
-    {
-        var args = string.Join(
-            ", ",
-            context.Arguments?.Select(x => $"{x.Key}: {x.Value}") ?? []);
-        Console.WriteLine($"{context.Function.Name}({args}) を呼んでもいいですか？(y/n)");
-        var answer = Console.ReadLine() ?? "n";
-        if (answer.ToLower(CultureInfo.InvariantCulture) == "y")
-        {
-            await next(context);
-        }
-        else
-        {
-            context.Result = new(context.Result, "ユーザーがキャンセルしました。");
-            context.Terminate = true;
-        }
-    }
-}
+//class HumanInTheLoopFilter : IAutoFunctionInvocationFilter
+//{
+//    public async Task OnAutoFunctionInvocationAsync(
+//        AutoFunctionInvocationContext context,
+//        Func<AutoFunctionInvocationContext, Task> next)
+//    {
+//        var args = string.Join(
+//            ", ",
+//            context.Arguments?.Select(x => $"{x.Key}: {x.Value}") ?? []);
+//        Console.WriteLine($"{context.Function.Name}({args}) を呼んでもいいですか？(y/n)");
+//        var answer = Console.ReadLine() ?? "n";
+//        if (answer.ToLower(CultureInfo.InvariantCulture) == "y")
+//        {
+//            await next(context);
+//        }
+//        else
+//        {
+//            context.Result = new(context.Result, "ユーザーがキャンセルしました。");
+//            context.Terminate = true;
+//        }
+//    }
+//}

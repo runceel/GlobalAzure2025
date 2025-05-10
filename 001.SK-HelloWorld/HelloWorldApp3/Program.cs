@@ -20,20 +20,8 @@ builder.AddAzureOpenAIChatCompletion("gpt-4.1",
     aoaiEndpoint,
     new AzureCliCredential());
 
-// WeatherPlugin クラスをプラグインとして登録
-builder.Plugins.AddFromType<WeatherPlugin>();
-
 // Semantic Kernel のコアクラスの Kernel クラスを作成
 var kernel = builder.Build();
-
-// プラグインを Kernel 経由で呼び出して結果を取得
-var weatherForecast = await kernel.InvokeAsync<string>(
-    "WeatherPlugin",
-    "GetWeatherForecast",
-    new KernelArguments
-    {
-        ["location"] = "東京",
-    });
 
 // Chat Completions API を呼び出すサービスを取得
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
@@ -48,7 +36,7 @@ ChatHistory chatHistory = [
         コンテキストに書いていないことに関しては「チュールが美味しい」という話題に誘導するような雑談をしてください。
                 
         ### コンテキスト
-        - {weatherForecast}
+        - 東京の天気は晴れです。
         """),
     // user プロンプト
     new ChatMessageContent(AuthorRole.User,
@@ -65,16 +53,3 @@ var result = await chatCompletionService.GetChatMessageContentAsync(
 
 // 結果を表示
 Console.WriteLine(result.Content);
-
-// WeatherPlugin クラスを定義
-class WeatherPlugin
-{
-    [KernelFunction]
-    [Description("天気予報を取得します。")]
-    public string GetWeatherForecast(
-        [Description("場所")]
-        string location)
-    {
-        return $"{location} の天気は「晴れ」です。";
-    }
-}

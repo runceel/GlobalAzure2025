@@ -24,7 +24,7 @@ public class AgentOrchestrator
         context.SetCustomStatus("ライターが執筆中です。");
         int loopCount = 1;
         // レビューが終わるまでループ
-        while (reviewResult.Finished is false || loopCount <= 10)
+        while (reviewResult.Finished is false && loopCount <= 10)
         {
             // ライターに執筆を依頼
             var writerAgentResponse = await context.CallActivityAsync<AgentResponse>(
@@ -53,11 +53,7 @@ public class AgentOrchestrator
                 ?? ReviewResult.EmptyFinished;
             chatHistory.AddRange(reviewerAgentResponse.Messages);
 
-            if (reviewResult.Finished)
-            {
-                context.SetCustomStatus("ライターが執筆を終了しました。");
-            }
-            else
+            if (!reviewResult.Finished)
             {
                 context.SetCustomStatus($"""
                     以下の指摘事項を反映中です。({loopCount} 回目)
@@ -66,7 +62,6 @@ public class AgentOrchestrator
                     ## 現在の文章
                     {latestWriterMessage.Content}
                     """);
-                    
             }
 
             loopCount++;

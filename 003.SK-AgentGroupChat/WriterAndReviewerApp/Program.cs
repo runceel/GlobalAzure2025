@@ -71,8 +71,6 @@ if (answer == null)
 
 // 結果を Markdown 形式でファイルに保存して VS Code で開く
 await File.WriteAllTextAsync($"output.md", $"""
-    # {userInput}
-    
     {answer.Content}
     """);
 Process.Start(new ProcessStartInfo("output.md")

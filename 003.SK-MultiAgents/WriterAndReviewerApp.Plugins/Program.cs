@@ -33,6 +33,18 @@ const string userInput = "ASP.NET Core MVC 入門";
 var response = await orchestratorAgent.InvokeAsync(userInput).FirstAsync();
 Console.WriteLine($"{response.Message.AuthorName}: {response.Message.Content}");
 
+await File.WriteAllTextAsync(
+    $"output.md",
+    response.Message.Content ?? "");
+Process.Start(new ProcessStartInfo
+{
+    FileName = "code",
+    Arguments = $"-r output.md",
+    UseShellExecute = true,
+    WindowStyle = ProcessWindowStyle.Hidden,
+});
+
+
 class FunctionInvocationLoggerFilter : IAutoFunctionInvocationFilter
 {
     public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
