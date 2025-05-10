@@ -62,6 +62,11 @@ class WeatherPlugin
     {
         return $"{date} の {location} の天気は「晴れ」です。";
     }
+
+    [KernelFunction]
+    [Description("今日の日付を取得します。")]
+    public DateTimeOffset GetToday() =>
+        TimeProvider.System.GetLocalNow();
 }
 
 // Human in the loop 用のフィルター
